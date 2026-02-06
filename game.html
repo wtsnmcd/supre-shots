@@ -17,7 +17,13 @@
 		.shop-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px dashed #2b2b2b}
 		.big{font-size:20px;font-weight:700}
 		#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-		#gameOver{background:rgba(0,0,0,0.85);padding:20px;border-radius:8px;color:#fff;pointer-events:auto;}
+		#overlay.active{background:radial-gradient(circle at 30% 20%,rgba(255,120,0,0.18),transparent 60%),radial-gradient(circle at 80% 80%,rgba(255,0,90,0.18),transparent 55%),rgba(0,0,0,0.75);backdrop-filter:blur(2px)}
+		#deathScreen{background:linear-gradient(160deg,#1a0f0f,#2b0f1f 40%,#111);padding:22px 26px;border-radius:10px;color:#fff;pointer-events:auto;border:1px solid #4a1b2e;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+		#deathTitle{font-size:28px;font-weight:800;letter-spacing:1px;color:#ff6b4a;text-transform:uppercase}
+		#deathSub{color:#ddd;margin:6px 0 12px 0}
+		#deathStats{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:8px 0 12px 0}
+		.pulse{animation:pulse 1.6s ease-in-out infinite}
+		@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
 	</style>
 </head>
 <body>
@@ -56,8 +62,32 @@
 					<div><button id="buy-spd" class="btn">Cost $12</button></div>
 				</div>
 				<div class="shop-item">
+					<div>+Max Health</div>
+					<div><button id="buy-hp" class="btn">Cost $20</button></div>
+				</div>
+				<div class="shop-item">
+					<div>+Move Speed</div>
+					<div><button id="buy-move" class="btn">Cost $18</button></div>
+				</div>
+				<div class="shop-item">
+					<div>Armor Plate (+1)</div>
+					<div><button id="buy-armor" class="btn">Cost $35</button></div>
+				</div>
+				<div class="shop-item">
 					<div>Shotgun (multi-shot)</div>
 					<div><button id="buy-shotgun" class="btn">Cost $60</button></div>
+				</div>
+				<div class="shop-item">
+					<div>SMG (fast fire)</div>
+					<div><button id="buy-smg" class="btn">Cost $75</button></div>
+				</div>
+				<div class="shop-item">
+					<div>Burst Rifle (3-shot)</div>
+					<div><button id="buy-burst" class="btn">Cost $90</button></div>
+				</div>
+				<div class="shop-item">
+					<div>Sniper (high damage)</div>
+					<div><button id="buy-sniper" class="btn">Cost $110</button></div>
 				</div>
 			</div>
 
@@ -72,292 +102,7 @@
 
 	<div id="overlay"></div>
 
-	<script>
-		const canvas = document.getElementById('c');
-		const ctx = canvas.getContext('2d');
-		const W = canvas.width, H = canvas.height;
-
-		const dom = {
-			health: document.getElementById('health'),
-			armor: document.getElementById('armor'),
-			money: document.getElementById('money'),
-			kills: document.getElementById('kills'),
-			wave: document.getElementById('wave'),
-			wDmg: document.getElementById('w-dmg'),
-			wFr: document.getElementById('w-fr'),
-			wSpd: document.getElementById('w-spd'),
-			buyDmg: document.getElementById('buy-dmg'),
-			buyFr: document.getElementById('buy-fr'),
-			buySpd: document.getElementById('buy-spd'),
-			buyShotgun: document.getElementById('buy-shotgun'),
-			shootMode: document.getElementById('shootMode')
-		};
-
-		let input = {left:false,right:false,up:false,down:false,mouseX:W/2,mouseY:H/2,shoot:false};
-
-		window.addEventListener('keydown',e=>{if(e.key==='a'||e.key==='ArrowLeft')input.left=true; if(e.key==='d'||e.key==='ArrowRight')input.right=true; if(e.key==='w'||e.key==='ArrowUp')input.up=true; if(e.key==='s'||e.key==='ArrowDown')input.down=true});
-		window.addEventListener('keyup',e=>{if(e.key==='a'||e.key==='ArrowLeft')input.left=false; if(e.key==='d'||e.key==='ArrowRight')input.right=false; if(e.key==='w'||e.key==='ArrowUp')input.up=false; if(e.key==='s'||e.key==='ArrowDown')input.down=false});
-		canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();input.mouseX=e.clientX-r.left;input.mouseY=e.clientY-r.top});
-		canvas.addEventListener('mousedown',e=>{if(e.button===0)input.shoot=true});
-		window.addEventListener('mouseup',e=>{if(e.button===0)input.shoot=false});
-
-		const player = {x:W/2,y:H/2,spd:2.0,r:14,health:80,maxHealth:80,armor:0};
-
-		const weapon = {damage:6,fireRate:4,bulletSpeed:8,mode:'single'};
-
-		let bullets = [];
-		let zombies = [];
-		let pickups = []; // health pickups dropped by zombies
-		let enemyBullets = []; // projectiles fired by some zombies
-		let miniboss = null; // miniboss object when active
-		let money=0,kills=0,wave=0; 
-
-		let spawnTimer=0,spawnInterval=1500; 
-		let inBetween = false; // true when post-wave shop is open
-		let lastShot=0; 
-
-		function rand(min,max){return Math.random()*(max-min)+min}
-
-		function spawnWave(){wave++; dom.wave.textContent=wave; const count = 6 + Math.floor(wave*1.6); for(let i=0;i<count;i++){spawnZombie(1000*i%count)}}
-
-		function spawnZombie(i){
-			let side=Math.floor(Math.random()*4);let x,y;
-			if(side===0){x=-30;y=rand(0,H)} else if(side===1){x=W+30;y=rand(0,H)} else if(side===2){x=rand(0,W);y=-30} else {x=rand(0,W);y=H+30}
-
-			// choose type with probabilities (more variety as waves increase)
-			const bruteChance = Math.min(0.22, wave * 0.03);
-			const runnerChance = Math.min(0.45, 0.18 + wave * 0.04);
-			const spitterChance = Math.min(0.28, 0.05 + wave * 0.02);
-			const r = Math.random();
-			let type = 'walker';
-			if(r < bruteChance) type = 'brute';
-			else if(r < bruteChance + runnerChance) type = 'runner';
-			else if(r < bruteChance + runnerChance + spitterChance) type = 'spitter';
-
-			const baseSpd = 0.4 + rand(0,0.8) + wave*0.05;
-			const baseHp = 12 + Math.floor(wave*5) + Math.floor(rand(0,10));
-
-			if(type === 'runner'){
-				zombies.push({x,y,spd: baseSpd + 0.9, r:9, hp: Math.max(5, Math.floor(baseHp*0.6)), maxHp: Math.max(5, Math.floor(baseHp*0.6)), type});
-			} else if(type === 'brute'){
-				zombies.push({x,y,spd: Math.max(0.12, baseSpd - 0.15), r:18, hp: Math.floor(baseHp*2.0), maxHp: Math.floor(baseHp*2.0), type});
-			} else if(type === 'spitter'){
-				// spitter: slow mover that shoots at the player
-				zombies.push({x,y,spd: Math.max(0.08, baseSpd - 0.2), r:14, hp: Math.floor(baseHp*1.2), maxHp: Math.floor(baseHp*1.2), type, shootInterval: 1000 + Math.random()*1200, lastShot: 0});
-			} else {
-				zombies.push({x,y,spd: baseSpd, r:12, hp: baseHp, maxHp: baseHp, type});
-			}
-		}
-
-		function spawnMiniboss(){
-			// place miniboss near top or random edge, central-ish
-			const x = W/2 + (Math.random()-0.5)*200;
-			const y = 60 + Math.random()*80;
-			const hp = 120 + Math.floor(wave * 60);
-			miniboss = {x,y,spd:0.8 + Math.min(1.6, wave*0.04), r:40, hp:hp, maxHp:hp, type:'miniboss', lastShot:0, shootInterval:700};
-		}
-
-		function shoot(angle){const now=performance.now(); const cooldown=1000/weapon.fireRate; if(now - lastShot < cooldown) return; lastShot = now; const sx = player.x + Math.cos(angle)*(player.r+8); const sy = player.y + Math.sin(angle)*(player.r+8);
-			if(weapon.mode==='single'){
-				bullets.push({x:sx,y:sy,dx:Math.cos(angle)*weapon.bulletSpeed,dy:Math.sin(angle)*weapon.bulletSpeed,damage:weapon.damage});
-			} else {
-				const spread = 0.28; const pellets = 6; for(let i=0;i<pellets;i++){const a = angle + (i-(pellets-1)/2)*(spread/pellets); bullets.push({x:sx,y:sy,dx:Math.cos(a)*weapon.bulletSpeed,dy:Math.sin(a)*weapon.bulletSpeed,damage:Math.max(1,Math.floor(weapon.damage*0.6))});}
-			}
-		}
-
-		function update(dt){const speed = player.spd; if(input.left) player.x -= speed; if(input.right) player.x += speed; if(input.up) player.y -= speed; if(input.down) player.y += speed; player.x = Math.max(10,Math.min(W-10,player.x)); player.y = Math.max(10,Math.min(H-10,player.y));
-			// if in-between waves, pause game logic until player starts next wave
-			if(inBetween) return;
-			const angle = Math.atan2(input.mouseY - player.y, input.mouseX - player.x);
-			if(input.shoot) shoot(angle);
-
-			for(let b of bullets){b.x += b.dx; b.y += b.dy}
-			bullets = bullets.filter(b=>b.x>-50 && b.x<W+50 && b.y>-50 && b.y<H+50);
-
-			const now = performance.now();
-			for(let z of zombies){const dx=player.x-z.x;const dy=player.y-z.y;const ang=Math.atan2(dy,dx);z.x += Math.cos(ang)*z.spd; z.y += Math.sin(ang)*z.spd; if(Math.hypot(z.x-player.x,z.y-player.y) < z.r + player.r){
-					// collision: armor blocks one hit, otherwise instant death
-					if(player.armor && player.armor > 0){ player.armor--; updateUI(); } else { player.health = 0; }
-					z.hp = -999;
-				}
-
-					// spitter shooting logic
-					if(z.type === 'spitter'){
-						if(!z.lastShot) z.lastShot = now;
-						if(now - z.lastShot > (z.shootInterval || 1200)){
-							z.lastShot = now;
-							z.shootInterval = 700 + Math.random()*1200;
-							const a = Math.atan2(player.y - z.y, player.x - z.x);
-							const spd = 5 + Math.min(5, wave*0.25);
-							enemyBullets.push({x: z.x + Math.cos(a)*(z.r+6), y: z.y + Math.sin(a)*(z.r+6), dx: Math.cos(a)*spd, dy: Math.sin(a)*spd, r:5});
-						}
-					}
-
-			}
-
-			for(let b of bullets){for(let z of zombies){if(z.hp>0 && Math.hypot(b.x - z.x, b.y - z.y) < z.r+3){z.hp -= b.damage; b._hit=true; if(z.hp<=0){
-								// reward based on type (reduced to increase difficulty)
-								let reward = 3 + Math.floor(wave*0.9);
-								if(z.type === 'runner') reward = Math.max(4, reward + 1);
-								if(z.type === 'brute') reward = Math.max(10, reward + 8);
-								money += reward;
-								kills++;
-								dom.money.textContent = money;
-								dom.kills.textContent = kills;
-								if(!z._dropped){ // spawn health pickup with reduced chance and amount
-									const dropChance = z.type === 'brute' ? 0.6 : (z.type === 'runner' ? 0.35 : 0.45);
-									if(Math.random() < dropChance){ // chance to drop
-										pickups.push({x:z.x, y:z.y, r:10 + (z.type==='brute'?4:0), heal: z.type==='brute'?30:10, ttl:8000});
-									}
-									z._dropped = true;
-								}
-							}}} }
-
-						// bullets vs miniboss
-						if(miniboss){
-							for(let b2 of bullets){
-								if(!b2._hit && Math.hypot(b2.x - miniboss.x, b2.y - miniboss.y) < miniboss.r + 4){
-									miniboss.hp -= b2.damage;
-									b2._hit = true;
-									if(miniboss.hp <= 0){
-										money += 50 + Math.floor(wave*20);
-										kills += 1;
-										dom.money.textContent = money;
-										dom.kills.textContent = kills;
-										miniboss = null;
-										inBetween = true; // open shop after miniboss
-										showPostWaveShop();
-										break;
-									}
-								}
-							}
-						}
-
-			bullets = bullets.filter(b=>!b._hit);
-			// remove zombies whose hp is 0 or below so they disappear immediately
-			zombies = zombies.filter(z=>z.hp>0);
-
-			// update pickups: ttl and player pickup collision
-			for(let p of pickups){p.ttl -= dt; if(Math.hypot(p.x - player.x, p.y - player.y) < p.r + player.r){ // pickup!
-					player.health = Math.min(player.maxHealth, player.health + p.heal);
-					p._collected = true;
-				}}
-			pickups = pickups.filter(p => !p._collected && p.ttl > 0);
-
-			// update enemy bullets and check collision with player
-			for(let eb of enemyBullets){ eb.x += eb.dx; eb.y += eb.dy; if(Math.hypot(eb.x - player.x, eb.y - player.y) < eb.r + player.r){ if(player.armor && player.armor>0){ player.armor--; updateUI(); } else { player.health = 0; } eb._hit = true; }}
-			enemyBullets = enemyBullets.filter(eb => !eb._hit && eb.x > -50 && eb.x < W+50 && eb.y > -50 && eb.y < H+50);
-
-			// update miniboss behavior if active
-			if(miniboss){
-				const dxm = player.x - miniboss.x; const dym = player.y - miniboss.y; const angm = Math.atan2(dym, dxm);
-				miniboss.x += Math.cos(angm) * miniboss.spd;
-				miniboss.y += Math.sin(angm) * miniboss.spd;
-				// miniboss shooting
-				if(!miniboss.lastShot) miniboss.lastShot = now;
-				if(now - miniboss.lastShot > (miniboss.shootInterval || 900)){
-					miniboss.lastShot = now;
-					miniboss.shootInterval = 700 + Math.random()*1000;
-					const a = Math.atan2(player.y - miniboss.y, player.x - miniboss.x);
-					const spd = 6 + Math.min(6, wave*0.3);
-					enemyBullets.push({x: miniboss.x + Math.cos(a)*(miniboss.r+8), y: miniboss.y + Math.sin(a)*(miniboss.r+8), dx: Math.cos(a)*spd, dy: Math.sin(a)*spd, r:7});
-				}
-				// collision with player
-				if(Math.hypot(miniboss.x-player.x,miniboss.y-player.y) < miniboss.r + player.r){
-					if(player.armor && player.armor > 0){ player.armor--; updateUI(); }
-					else { player.health = 0; }
-					miniboss.hp = 0; // miniboss takes damage on collision
-					miniboss = null;
-					inBetween = true;
-					showPostWaveShop();
-				}
-			}
-
-			if(zombies.length===0){
-				spawnTimer += dt;
-				// when wave clears, first spawn a miniboss; after miniboss dies show the shop
-				if(spawnTimer>1000 && !inBetween && !miniboss){
-					spawnTimer = 0;
-					spawnMiniboss();
-				}
-			}
-
-			if(player.health<=0){showGameOver()}
-
-			updateUI();
-		}
-
-		function updateUI(){dom.health.textContent = Math.max(0,Math.round(player.health)); dom.armor.textContent = player.armor || 0; dom.money.textContent = money; dom.wDmg.textContent = weapon.damage; dom.wFr.textContent = weapon.fireRate; dom.wSpd.textContent = weapon.bulletSpeed}
-
-		// post-wave shop overlay
-		function showPostWaveShop(){
-			const overlay = document.getElementById('overlay');
-			overlay.style.pointerEvents = 'auto';
-			overlay.innerHTML = `
-				<div class="panel" style="min-width:320px;pointer-events:auto;text-align:left">
-					<div class="big">Wave ${wave} Cleared</div>
-					<div style="margin:8px 0">Money: $${money}</div>
-					<div class="shop-item"><div>Armor (1 charge)</div><div><button id="post-buy-armor" class="btn">Cost $45</button></div></div>
-					<div class="shop-item"><div>High-Power Rifle (+8 damage)</div><div><button id="post-buy-rifle" class="btn">Cost $120</button></div></div>
-					<div class="shop-item"><div>SMG Mod (+6 fire rate)</div><div><button id="post-buy-smg" class="btn">Cost $110</button></div></div>
-					<div style="margin-top:10px"><button id="start-next-wave" class="btn">Start Next Wave</button></div>
-				</div>`;
-
-			document.getElementById('post-buy-armor').addEventListener('click', ()=>{
-				const cost = 45; if(money>=cost){ money -= cost; player.armor = (player.armor||0) + 1; dom.money.textContent = money; updateUI(); }
-			});
-			document.getElementById('post-buy-rifle').addEventListener('click', ()=>{
-				const cost = 120; if(money>=cost){ money -= cost; weapon.damage += 8; dom.money.textContent = money; updateUI(); }
-			});
-			document.getElementById('post-buy-smg').addEventListener('click', ()=>{
-				const cost = 110; if(money>=cost){ money -= cost; weapon.fireRate += 6; dom.money.textContent = money; updateUI(); }
-			});
-
-			document.getElementById('start-next-wave').addEventListener('click', ()=>{
-				overlay.innerHTML = '';
-				overlay.style.pointerEvents = 'none';
-				inBetween = false;
-				spawnWave();
-			});
-		}
-
-		function draw(){ctx.clearRect(0,0,W,H);
-			  for(let b of bullets){ctx.fillStyle='#ffd'; ctx.beginPath(); ctx.arc(b.x,b.y,3,0,Math.PI*2); ctx.fill()}
-			  // draw pickups
-			  for(let p of pickups){ctx.fillStyle='magenta'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.fillRect(p.x-6,p.y-2,12,4); ctx.fillRect(p.x-2,p.y-6,4,12)}
-			  // draw enemy bullets
-			  for(let eb of enemyBullets){ctx.fillStyle='orangered'; ctx.beginPath(); ctx.arc(eb.x, eb.y, eb.r, 0, Math.PI*2); ctx.fill()}
-			for(let z of zombies){const hpRatio = Math.max(0,z.hp)/z.maxHp; let col;
-				  if(z.type === 'runner') col = `rgb(80,200,80)`;
-				  else if(z.type === 'brute') col = `rgb(180,60,60)`;
-				  else if(z.type === 'spitter') col = `rgb(150,100,180)`;
-				  else col = `rgb(${200-150*hpRatio},${60+100*hpRatio},60)`;
-				  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(z.x,z.y,z.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(z.x-12,z.y-18,24,4); ctx.fillStyle='lime'; ctx.fillRect(z.x-12,z.y-18,24*hpRatio,4)}
-			// draw miniboss if present
-			if(miniboss){
-				const mRatio = Math.max(0, miniboss.hp) / miniboss.maxHp;
-				ctx.fillStyle = 'darkviolet'; ctx.beginPath(); ctx.arc(miniboss.x, miniboss.y, miniboss.r, 0, Math.PI*2); ctx.fill();
-				ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(miniboss.x-40, miniboss.y-miniboss.r-18, 80, 8);
-				ctx.fillStyle='lime'; ctx.fillRect(miniboss.x-40, miniboss.y-miniboss.r-18, 80*mRatio, 8);
-			}
-			const mAngle=Math.atan2(input.mouseY - player.y, input.mouseX - player.x); ctx.save(); ctx.translate(player.x,player.y); ctx.rotate(mAngle); ctx.fillStyle='#4aa'; ctx.beginPath(); ctx.arc(0,0,player.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#222'; ctx.fillRect(player.r, -6, 14, 12); ctx.restore();
-		}
-
-		let lastFrame = performance.now();
-		function loop(t){const dt = t - lastFrame; lastFrame = t; update(dt); draw(); requestAnimationFrame(loop)}
-
-		function showGameOver(){cancelAnimationFrame(0); const overlay = document.getElementById('overlay'); overlay.innerHTML = `<div id="gameOver" class="panel"><div class="big">Game Over</div><div>Kills: ${kills}</div><div>Wave: ${wave}</div><button id="restart" class="btn">Restart</button></div>`; document.getElementById('restart').addEventListener('click',restart);}
-
-		function restart(){player.x=W/2;player.y=H/2;player.health=player.maxHealth;money=0;kills=0;wave=0;bullets=[];zombies=[];spawnTimer=0;document.getElementById('overlay').innerHTML=''; dom.kills.textContent=0; dom.wave.textContent=0; updateUI(); spawnWave(); lastFrame = performance.now(); requestAnimationFrame(loop)}
-
-		dom.buyDmg.addEventListener('click',()=>{const cost=10; if(money>=cost){money-=cost;weapon.damage+=2;dom.money.textContent=money}});
-		dom.buyFr.addEventListener('click',()=>{const cost=15; if(money>=cost){money-=cost;weapon.fireRate += 0.8;dom.money.textContent=money}});
-		dom.buySpd.addEventListener('click',()=>{const cost=12; if(money>=cost){money-=cost;weapon.bulletSpeed += 2;dom.money.textContent=money}});
-		dom.buyShotgun.addEventListener('click',()=>{const cost=60; if(money>=cost && weapon.mode!=='shotgun'){money-=cost;weapon.mode='shotgun'; dom.shootMode.textContent='Mode: Shotgun'; dom.money.textContent=money}});
-		dom.shootMode.addEventListener('click',()=>{weapon.mode = weapon.mode==='single' ? 'shotgun' : 'single'; dom.shootMode.textContent = 'Switch Mode: ' + (weapon.mode==='single'?'Single':'Shotgun')});
-
-		spawnWave(); requestAnimationFrame(loop);
-	</script>
+	<script type="module" src="js/main.js"></script>
 </body>
 </html>
 
