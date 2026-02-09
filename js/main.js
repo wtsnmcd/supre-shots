@@ -2,8 +2,10 @@ import {createState, resetForRestart} from './state.js';
 import {setupInput} from './input.js';
 import {getWeaponStats, setMode, cycleMode, updateModeLabel, shoot} from './weapons.js';
 import {spawnWave, spawnMiniboss, updateBullets, updateZombies, handleBulletHits, updatePickups, updateEnemyBullets, updateMiniboss, checkWaveEnd} from './entities.js';
-import {updateUI, showPostWaveShop, showDeathScreen} from './ui.js';
+import {updateUI, showPostWaveShop, showDeathScreen, showPauseShop} from './ui.js';
 import {draw} from './draw.js';
+import {setupEditors} from './editor/index.js';
+import {loadSprites, getZombieSprite} from './sprites.js';
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -27,11 +29,13 @@ const dom = {
 	buySmg: document.getElementById('buy-smg'),
 	buyBurst: document.getElementById('buy-burst'),
 	buySniper: document.getElementById('buy-sniper'),
-	shootMode: document.getElementById('shootMode')
+	shootMode: document.getElementById('shootMode'),
+	pauseBtn: document.getElementById('pause-btn')
 };
 
 const state = createState(canvas, ctx, dom);
 state.input = setupInput(canvas, state.W, state.H);
+setupEditors(state, dom);
 
 function onMinibossDefeated(){
 	state.inBetween = true;
@@ -39,6 +43,20 @@ function onMinibossDefeated(){
 }
 
 function update(dt){
+	if(state.input.pause && !state.inBetween && !state.isDead){
+		state.input.pause = false;
+		if(state.isPaused){
+			state.isPaused = false;
+			const overlay = document.getElementById('overlay');
+			overlay.innerHTML = '';
+			overlay.style.pointerEvents = 'none';
+		} else {
+			state.isPaused = true;
+			showPauseShop(state, () => {}, updateUI, getWeaponStats);
+		}
+		return;
+	}
+
 	const speed = state.player.spd;
 	if(state.input.left) state.player.x -= speed;
 	if(state.input.right) state.player.x += speed;
@@ -47,7 +65,7 @@ function update(dt){
 	state.player.x = Math.max(10,Math.min(state.W-10,state.player.x));
 	state.player.y = Math.max(10,Math.min(state.H-10,state.player.y));
 
-	if(state.inBetween || state.isDead) return;
+	if(state.inBetween || state.isDead || state.isPaused) return;
 
 	const angle = Math.atan2(state.input.mouseY - state.player.y, state.input.mouseX - state.player.x);
 	if(state.input.shoot) shoot(state, angle);
@@ -70,7 +88,7 @@ function update(dt){
 }
 
 function loop(t){
-	const dt = t - state.lastFrame; state.lastFrame = t; update(dt); draw(state); state.frameId = requestAnimationFrame(loop);
+	const dt = t - state.lastFrame; state.lastFrame = t; if(!state.isPaused) update(dt); draw(state); state.frameId = requestAnimationFrame(loop);
 }
 
 function handleDeath(){
@@ -108,8 +126,13 @@ state.dom.buySmg.addEventListener('click',()=>{const cost=75; if(state.money>=co
 state.dom.buyBurst.addEventListener('click',()=>{const cost=90; if(state.money>=cost && !state.weapon.unlocked.burst){state.money-=cost;state.weapon.unlocked.burst=true; setMode(state, 'burst'); updateUI(state, getWeaponStats);}});
 state.dom.buySniper.addEventListener('click',()=>{const cost=110; if(state.money>=cost && !state.weapon.unlocked.sniper){state.money-=cost;state.weapon.unlocked.sniper=true; setMode(state, 'sniper'); updateUI(state, getWeaponStats);}});
 state.dom.shootMode.addEventListener('click',()=>{cycleMode(state); updateUI(state, getWeaponStats);});
+state.dom.pauseBtn.addEventListener('click',()=>{if(!state.inBetween && !state.isDead && !state.isPaused){state.isPaused = true; showPauseShop(state, () => {}, updateUI, getWeaponStats);}});
 
-updateModeLabel(state);
-updateUI(state, getWeaponStats);
-spawnWave(state);
-state.frameId = requestAnimationFrame(loop);
+// Load sprites and start game
+loadSprites().then(() => {
+	state.zombieSprite = getZombieSprite();
+	updateModeLabel(state);
+	updateUI(state, getWeaponStats);
+	spawnWave(state);
+	state.frameId = requestAnimationFrame(loop);
+});

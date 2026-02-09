@@ -16,6 +16,20 @@ export function createState(canvas, ctx, dom){
 			mode: 'single',
 			unlocked: {single:true,shotgun:false,smg:false,burst:false,sniper:false}
 		},
+		zombieAppearance: {
+			walkerColor: '#c83c3c',
+			runnerColor: '#50c850',
+			bruteColor: '#b43c3c',
+			spitterColor: '#9664b4',
+			useCustomColors: false,
+			sizeMultiplier: 1.0
+		},
+		background: {
+			scroll: 0,
+			particles: []
+		},
+		isPaused: false,
+		zombieSprite: null,
 		bullets: [],
 		zombies: [],
 		pickups: [],

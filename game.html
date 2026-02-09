@@ -30,12 +30,15 @@
 	<div id="gameWrap">
 		<div>
 			<canvas id="c" width="960" height="640"></canvas>
-			<div class="hud" style="width:960px">
-				<div class="stat">Health: <span id="health">100</span></div>
-				<div class="stat">Armor: <span id="armor">0</span></div>
-				<div class="stat">Money: $<span id="money">0</span></div>
-				<div class="stat">Kills: <span id="kills">0</span></div>
-				<div class="stat">Wave: <span id="wave">0</span></div>
+			<div class="hud" style="width:960px;display:flex;justify-content:space-between;align-items:center">
+				<div style="display:flex;gap:15px">
+					<div class="stat">Health: <span id="health">100</span></div>
+					<div class="stat">Armor: <span id="armor">0</span></div>
+					<div class="stat">Money: $<span id="money">0</span></div>
+					<div class="stat">Kills: <span id="kills">0</span></div>
+					<div class="stat">Wave: <span id="wave">0</span></div>
+				</div>
+				<button id="pause-btn" class="btn" style="margin:0">PAUSE (P)</button>
 			</div>
 		</div>
 		<div id="ui">

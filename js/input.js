@@ -1,18 +1,18 @@
 export function setupInput(canvas, W, H){
-	const input = {left:false,right:false,up:false,down:false,mouseX:W/2,mouseY:H/2,shoot:false};
+		const input = {left:false,right:false,up:false,down:false,mouseX:W/2,mouseY:H/2,shoot:false,pause:false};
 
-	window.addEventListener('keydown',e=>{
-		if(e.key==='a'||e.key==='ArrowLeft')input.left=true;
-		if(e.key==='d'||e.key==='ArrowRight')input.right=true;
-		if(e.key==='w'||e.key==='ArrowUp')input.up=true;
-		if(e.key==='s'||e.key==='ArrowDown')input.down=true;
+		window.addEventListener('keydown',e=>{
+			if(e.key==='a'||e.key==='ArrowLeft')input.left=true;
+			if(e.key==='d'||e.key==='ArrowRight')input.right=true;
+			if(e.key==='w'||e.key==='ArrowUp')input.up=true;
+			if(e.key==='s'||e.key==='ArrowDown')input.down=true;
+			if(e.key==='p'||e.key==='P'){input.pause=true;e.preventDefault();}
 	});
 	window.addEventListener('keyup',e=>{
 		if(e.key==='a'||e.key==='ArrowLeft')input.left=false;
 		if(e.key==='d'||e.key==='ArrowRight')input.right=false;
 		if(e.key==='w'||e.key==='ArrowUp')input.up=false;
-		if(e.key==='s'||e.key==='ArrowDown')input.down=false;
-	});
+		if(e.key==='s'||e.key==='ArrowDown')input.down=false;			if(e.key==='p'||e.key==='P')input.pause=false;	});
 	canvas.addEventListener('mousemove',e=>{
 		const r=canvas.getBoundingClientRect();
 		input.mouseX = e.clientX - r.left;
