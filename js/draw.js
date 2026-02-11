@@ -101,7 +101,12 @@ export function draw(state){
 	}
 	if(state.miniboss){
 		const mRatio = Math.max(0, state.miniboss.hp) / state.miniboss.maxHp;
-		ctx.fillStyle = 'darkviolet'; ctx.beginPath(); ctx.arc(state.miniboss.x, state.miniboss.y, state.miniboss.r, 0, Math.PI*2); ctx.fill();
+		if(state.bossSprite){
+			const scaledSize = Math.max(10, state.miniboss.r * 5);
+			ctx.drawImage(state.bossSprite, state.miniboss.x - scaledSize/2, state.miniboss.y - scaledSize/2, scaledSize, scaledSize);
+		} else {
+			ctx.fillStyle = 'darkviolet'; ctx.beginPath(); ctx.arc(state.miniboss.x, state.miniboss.y, state.miniboss.r, 0, Math.PI*2); ctx.fill();
+		}
 		ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(state.miniboss.x-40, state.miniboss.y-state.miniboss.r-18, 80, 8);
 		ctx.fillStyle='lime'; ctx.fillRect(state.miniboss.x-40, state.miniboss.y-state.miniboss.r-18, 80*mRatio, 8);
 	}

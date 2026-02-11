@@ -30,6 +30,7 @@ export function createState(canvas, ctx, dom){
 		},
 		isPaused: false,
 		zombieSprite: null,
+		bossSprite: null,
 		bullets: [],
 		zombies: [],
 		pickups: [],
