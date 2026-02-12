@@ -111,5 +111,14 @@ export function draw(state){
 		ctx.fillStyle='lime'; ctx.fillRect(state.miniboss.x-40, state.miniboss.y-state.miniboss.r-18, 80*mRatio, 8);
 	}
 	const mAngle=Math.atan2(state.input.mouseY - state.player.y, state.input.mouseX - state.player.x);
-	ctx.save(); ctx.translate(state.player.x,state.player.y); ctx.rotate(mAngle); ctx.fillStyle='#4aa'; ctx.beginPath(); ctx.arc(0,0,state.player.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#222'; ctx.fillRect(state.player.r, -6, 14, 12); ctx.restore();
+	ctx.save();
+	ctx.translate(state.player.x,state.player.y);
+	ctx.rotate(mAngle);
+	ctx.fillStyle='#4aa';
+	ctx.beginPath();
+	ctx.arc(0,0,state.player.r,0,Math.PI*2);
+	ctx.fill();
+	ctx.fillStyle='#222';
+	ctx.fillRect(state.player.r, -6, 14, 12);
+	ctx.restore();
 }
