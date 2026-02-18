@@ -91,9 +91,15 @@ export function draw(state){
 		
 		if(state.spitterSprite && z.type === 'spitter'){
 			ctx.save();
-			const spriteSize = 54;
+			const spriteSize = 42;
 			const scaledSize = spriteSize * scale;
 			ctx.drawImage(state.spitterSprite, z.x - scaledSize/2, z.y - scaledSize/2, scaledSize, scaledSize);
+			ctx.restore();
+		} else if(state.tankSprite && z.type === 'brute'){
+			ctx.save();
+			const spriteSize = 32;
+			const scaledSize = spriteSize * scale;
+			ctx.drawImage(state.tankSprite, z.x - scaledSize/2, z.y - scaledSize/2, scaledSize, scaledSize);
 			ctx.restore();
 		} else if(state.runnerSprite && z.type === 'runner'){
 			ctx.save();

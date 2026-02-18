@@ -4,19 +4,21 @@ const BOSS_SPRITE_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACW
 const ENEMY_BULLET_SPRITE_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABFElEQVR4AeyVPQrCQBCFJyIi/jQWIolYCR5AD6Bgq6fxGF5AsLYTQQ/gBbyAChYWkt4QQghZeRsS0mVHEREmMNnN/sx7+01ISvTjSwwIASEgBP6TwMq21aHXU5tuV6H/yceURWDZ6ahLv68g+IgiapaS7TABMxjnRpLBcBcEj75Pzzgmu1ymcxjSpFbTRjAGI4apsmUsA9iVCkJ8UKlgSMe03dYt98Y2cAoCGlWr+tQwkRKBcN4Qnk2CZQDYUYaW4xBOPG80dAlAZee6ujQmovk1LAOz+91CbK9XgmB9PKa952XvAubyyU36LANpwoXrWghnvdYthIe3m5XOc9q3DHAEitaKASEgBISAEBACXydQ9DN6AQAA//8BCVv7AAAABklEQVQDAIbQVEEs1V7vAAAAAElFTkSuQmCC';
 const RUNNER_SPRITE_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABs0lEQVR4AeyUP0gCURzHv5dhR3+4kwjKoBwCD6IQhLYcGnKpiEbnQGxsaAqkdDRoKCJwi8C9hJYosCEIWhwyKRIKtBw8E0P89/q9mxocfAcRxB3v8X73u3vv97nv+77rwR9fFoClgKWApYClgGkFGMA0TWMul4vJsky35v7ppgCoGpsLO/CQyeAll4M3OgBVVSktDiEMoK0PsfnjEfQ5e7F0PY79jxCcK4Nwb9vA1RBFEAbIxCtIbdVxHiyiUWnj5DCB/NUXbiNN6LouWh9CAFxmpihAuYwklYot56G47UgdjCJNuRJjEPWDEADVxMKRzAfskQci2Ul4fNPwrr1hhrJT/iYHoKj7JgRQ0nXYaW3/2Rj6yQN8C+6SaUOF2U0Fng31dwEkQLoIvKP6WEeIPLDofUWAxl3KtT7buFytolAo0Gvo+hJSgK/qUFU0KIjTSZigkRyBNI0JMmetVqNIrAkDkNOlbLRlQERiw4YXTgnGR2AEIPT1HFUYgE/iEE9hm3EMuReeKeY5/ky0mwLgRfhe3++UpJtgUeIxz5nppgHMFOs0xwKwFLAU+P8KdDr7P3PfAAAA//9f6dOiAAAABklEQVQDAOpeikGpNchPAAAAAElFTkSuQmCC';
 const SPITTER_SPRITE_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAB90lEQVR4AexUzSttURT/neO6Xreebsl79XjveW+k5GOAqzBQlJFkwkBCRpK5f4BMlbkwlpQJMlNXhIQy4cpHvuLm6n7hHve32GWi86Gb1Dm19tp77X3W77d+Z52t45Mfl4CrgKvA11EgOXVg8MqIj+wYtNjQpuH3+yXGuFOzpAABUydRJMb3BdC4e4CWm42H4ihIgpYxAgTXC30gqDKCn0+3w1uow9OWwFZBgRCBg8dUAYKxepWb678X1Qg0HSIrV5NwZeDAMQlTAvrvl+qLYrUg8P9YAE93hpigvw4k8Tq15UwJ5HeVguArsz+wuvgP8xN5WFzKl+o39sqxdVwn6+DyT+R0JxEqKZE+scrClAC/r0p2G4ngu66jqfFKQlU123g8O5NYbeulxCpOT8VbHUwJMCElbxi4RsvgDRQQARiv7zkC99Q6/UdwatlMCYTDYe1xJke+eWzvSfzMQh76J7+Bvm/Yi+RJSgB5LhQKvXSmRMwHUwJvU2Slu56gkVQKDT4flH97xu7cEgGqEB3Llurn7u/xy+PBejwuvqP3VhoyMeEFz2WEAJMyOSWeSnd6c9s1RjujoOceyXGfc7tmSQGVlCBrwTL5HVkx7SPgzGuLAF/4EwxqRbu7GskoY9yp2SbgFOi991wCrgKuAq4CGVfgvQtIxZ8BAAD//7IhNhEAAAAGSURBVAMA/pfZQXmmq98AAAAASUVORK5CYII=';
+const TANK_SPRITE_DATA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABZ0lEQVR4AeyUsUvDQBTGv4SSpi2phiKlUMFOgoNQcHB1KSJODp26iILWP8DN3UV0EJ0dXEUEnV0UJyfBQdChBSlFqtWh0Zp470JRsr1zKC0X7rvLI3nv/e47OBN9fjSAdkA7oB0YPAe8Qy/oSVyiwR+JV/5gOUCNjbSBoB0gs5NCYcPBeCVcRWuCEQtvsACotF/3UfzOYayUoBCxtIlu24dt2zLmTiyAeDWOwpWL5f0ENs9GUD11sHeRwdF1FsVzl3qzXWABUAc7H8OkZWFG7HgumYRjhiU+7j/pM1thNiOtddPB+nQDC/kayqUGlkZrUp16l1Hl91cugPF6+4Xjuxx2H7OonKTgTFlwZ208bL9RVYMmjrgAsvbKfFOudAx0/jJQnFQAjKeDd2wttrA68Yy18gsoFv3Zuxc5UAGgPAnRvPSUraciJFUAyqUd90Sxkv4DoNQwmqQBtAPaAe3A8DsQvfmi8Q8AAAD//4KeCkcAAAAGSURBVAMAjJZXQRxSHDoAAAAASUVORK5CYII=';
 
 let zombieSprite = null;
 let bossSprite = null;
 let enemyBulletSprite = null;
 let runnerSprite = null;
 let spitterSprite = null;
+let tankSprite = null;
 
 export function loadSprites(){
 	return new Promise((resolve) => {
 		let loaded = 0;
 		const onLoad = () => {
 			loaded++;
-			if(loaded >= 5) resolve();
+			if(loaded >= 6) resolve();
 		};
 		const zombieImg = new Image();
 		zombieImg.onload = () => {
@@ -52,6 +54,13 @@ export function loadSprites(){
 			onLoad();
 		};
 		spitterImg.src = SPITTER_SPRITE_DATA;
+
+		const tankImg = new Image();
+		tankImg.onload = () => {
+			tankSprite = tankImg;
+			onLoad();
+		};
+		tankImg.src = TANK_SPRITE_DATA;
 	});
 }
 
@@ -73,4 +82,8 @@ export function getRunnerSprite(){
 
 export function getSpitterSprite(){
 	return spitterSprite;
+}
+
+export function getTankSprite(){
+	return tankSprite;
 }
