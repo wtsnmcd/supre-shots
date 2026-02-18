@@ -5,17 +5,19 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>Zombie Shooter — Upgrades</title>
 	<style>
-		html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#111;color:#eee}
-		#gameWrap{display:flex;gap:10px;padding:10px;box-sizing:border-box}
-		canvas{background:#222;border:2px solid #333;display:block}
-		#ui{width:300px;min-width:220px}
-		.panel{background:#1b1b1b;padding:10px;border:1px solid #2b2b2b;margin-bottom:10px}
+		html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#111;color:#eee;overflow:hidden}
+		#gameWrap{display:flex;gap:16px;padding:12px;box-sizing:border-box;align-items:flex-start;height:100vh}
+		#leftCol{display:flex;flex-direction:column;gap:8px}
+		canvas{background:#222;border:2px solid #333;display:block;max-width:100%;height:calc(100vh - 96px)}
+		#ui{flex:1;min-width:320px;max-width:520px}
+		.panel{background:#1b1b1b;padding:8px;border:1px solid #2b2b2b;margin-bottom:8px}
 		.hud{display:flex;justify-content:space-between;margin-bottom:8px}
-		.btn{display:inline-block;padding:8px 10px;margin:4px 0;background:#2b6ea3;color:white;border:none;cursor:pointer}
+		.btn{display:inline-block;padding:6px 8px;margin:4px 0;background:#2b6ea3;color:white;border:none;cursor:pointer}
 		.btn:disabled{opacity:0.4;cursor:default}
-		.stat{font-size:14px}
+		.stat{font-size:13px}
+		.shop-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
 		.shop-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px dashed #2b2b2b}
-		.big{font-size:20px;font-weight:700}
+		.big{font-size:18px;font-weight:700}
 		#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 		#overlay.active{background:radial-gradient(circle at 30% 20%,rgba(255,120,0,0.18),transparent 60%),radial-gradient(circle at 80% 80%,rgba(255,0,90,0.18),transparent 55%),rgba(0,0,0,0.75);backdrop-filter:blur(2px)}
 		#deathScreen{background:linear-gradient(160deg,#1a0f0f,#2b0f1f 40%,#111);padding:22px 26px;border-radius:10px;color:#fff;pointer-events:auto;border:1px solid #4a1b2e;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
@@ -28,9 +30,9 @@
 </head>
 <body>
 	<div id="gameWrap">
-		<div>
-			<canvas id="c" width="960" height="640"></canvas>
-			<div class="hud" style="width:960px;display:flex;justify-content:space-between;align-items:center">
+		<div id="leftCol">
+			<canvas id="c" width="1200" height="760"></canvas>
+			<div class="hud" style="width:1200px;display:flex;justify-content:space-between;align-items:center">
 				<div style="display:flex;gap:15px">
 					<div class="stat">Health: <span id="health">100</span></div>
 					<div class="stat">Armor: <span id="armor">0</span></div>
@@ -52,45 +54,47 @@
 
 			<div class="panel">
 				<div class="big">Shop</div>
-				<div class="shop-item">
-					<div>+Damage</div>
-					<div><button id="buy-dmg" class="btn">Cost $10</button></div>
-				</div>
-				<div class="shop-item">
-					<div>+Fire Rate</div>
-					<div><button id="buy-fr" class="btn">Cost $15</button></div>
-				</div>
-				<div class="shop-item">
-					<div>+Bullet Speed</div>
-					<div><button id="buy-spd" class="btn">Cost $12</button></div>
-				</div>
-				<div class="shop-item">
-					<div>+Max Health</div>
-					<div><button id="buy-hp" class="btn">Cost $20</button></div>
-				</div>
-				<div class="shop-item">
-					<div>+Move Speed</div>
-					<div><button id="buy-move" class="btn">Cost $18</button></div>
-				</div>
-				<div class="shop-item">
-					<div>Armor Plate (+1)</div>
-					<div><button id="buy-armor" class="btn">Cost $35</button></div>
-				</div>
-				<div class="shop-item">
-					<div>Shotgun (multi-shot)</div>
-					<div><button id="buy-shotgun" class="btn">Cost $60</button></div>
-				</div>
-				<div class="shop-item">
-					<div>SMG (fast fire)</div>
-					<div><button id="buy-smg" class="btn">Cost $75</button></div>
-				</div>
-				<div class="shop-item">
-					<div>Burst Rifle (3-shot)</div>
-					<div><button id="buy-burst" class="btn">Cost $90</button></div>
-				</div>
-				<div class="shop-item">
-					<div>Sniper (high damage)</div>
-					<div><button id="buy-sniper" class="btn">Cost $110</button></div>
+				<div class="shop-grid">
+					<div class="shop-item">
+						<div>+Damage</div>
+						<div><button id="buy-dmg" class="btn">Cost $10</button></div>
+					</div>
+					<div class="shop-item">
+						<div>+Fire Rate</div>
+						<div><button id="buy-fr" class="btn">Cost $15</button></div>
+					</div>
+					<div class="shop-item">
+						<div>+Bullet Speed</div>
+						<div><button id="buy-spd" class="btn">Cost $12</button></div>
+					</div>
+					<div class="shop-item">
+						<div>+Max Health</div>
+						<div><button id="buy-hp" class="btn">Cost $20</button></div>
+					</div>
+					<div class="shop-item">
+						<div>+Move Speed</div>
+						<div><button id="buy-move" class="btn">Cost $18</button></div>
+					</div>
+					<div class="shop-item">
+						<div>Armor Plate (+1)</div>
+						<div><button id="buy-armor" class="btn">Cost $35</button></div>
+					</div>
+					<div class="shop-item">
+						<div>Shotgun (multi-shot)</div>
+						<div><button id="buy-shotgun" class="btn">Cost $60</button></div>
+					</div>
+					<div class="shop-item">
+						<div>SMG (fast fire)</div>
+						<div><button id="buy-smg" class="btn">Cost $75</button></div>
+					</div>
+					<div class="shop-item">
+						<div>Burst Rifle (3-shot)</div>
+						<div><button id="buy-burst" class="btn">Cost $90</button></div>
+					</div>
+					<div class="shop-item">
+						<div>Sniper (high damage)</div>
+						<div><button id="buy-sniper" class="btn">Cost $110</button></div>
+					</div>
 				</div>
 			</div>
 

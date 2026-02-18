@@ -5,7 +5,7 @@ import {spawnWave, spawnMiniboss, updateBullets, updateZombies, handleBulletHits
 import {updateUI, showPostWaveShop, showDeathScreen, showPauseShop} from './ui.js';
 import {draw} from './draw.js';
 import {setupEditors} from './editor/index.js';
-import {loadSprites, getZombieSprite, getBossSprite} from './sprites.js';
+import {loadSprites, getZombieSprite, getBossSprite, getEnemyBulletSprite, getRunnerSprite} from './sprites.js';
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -132,6 +132,8 @@ state.dom.pauseBtn.addEventListener('click',()=>{if(!state.inBetween && !state.i
 loadSprites().then(() => {
 	state.zombieSprite = getZombieSprite();
 	state.bossSprite = getBossSprite();
+	state.enemyBulletSprite = getEnemyBulletSprite();
+	state.runnerSprite = getRunnerSprite();
 	updateModeLabel(state);
 	updateUI(state, getWeaponStats);
 	spawnWave(state);

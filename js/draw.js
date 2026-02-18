@@ -71,13 +71,31 @@ export function draw(state){
 	drawBackground(state);
 	for(let b of state.bullets){ctx.fillStyle='#ffd'; ctx.beginPath(); ctx.arc(b.x,b.y,3,0,Math.PI*2); ctx.fill()}
 	for(let p of state.pickups){ctx.fillStyle='magenta'; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.fillRect(p.x-6,p.y-2,12,4); ctx.fillRect(p.x-2,p.y-6,4,12)}
-	for(let eb of state.enemyBullets){ctx.fillStyle='orangered'; ctx.beginPath(); ctx.arc(eb.x, eb.y, eb.r, 0, Math.PI*2); ctx.fill()}
+	for(let eb of state.enemyBullets){
+		if(state.enemyBulletSprite){
+			const size = Math.max(32, eb.r * 10);
+			const angle = Math.atan2(eb.dy || 0, eb.dx || 0);
+			ctx.save();
+			ctx.translate(eb.x, eb.y);
+			ctx.rotate(angle);
+			ctx.drawImage(state.enemyBulletSprite, -size/2, -size/2, size, size);
+			ctx.restore();
+		} else {
+			ctx.fillStyle='orangered'; ctx.beginPath(); ctx.arc(eb.x, eb.y, eb.r, 0, Math.PI*2); ctx.fill();
+		}
+	}
 	for(let z of state.zombies){
 		const hpRatio = Math.max(0,z.hp)/z.maxHp;
 		const app = state.zombieAppearance;
 		const scale = (z.r * app.sizeMultiplier) / 4;
 		
-		if(state.zombieSprite && z.type === 'walker'){
+		if(state.runnerSprite && z.type === 'runner'){
+			ctx.save();
+			const spriteSize = 44;
+			const scaledSize = spriteSize * scale;
+			ctx.drawImage(state.runnerSprite, z.x - scaledSize/2, z.y - scaledSize/2, scaledSize, scaledSize);
+			ctx.restore();
+		} else if(state.zombieSprite && z.type === 'walker'){
 			ctx.save();
 			ctx.globalAlpha = app.useCustomColors ? 0.8 : 1.0;
 			const spriteSize = 64;

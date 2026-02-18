@@ -31,6 +31,8 @@ export function createState(canvas, ctx, dom){
 		isPaused: false,
 		zombieSprite: null,
 		bossSprite: null,
+		enemyBulletSprite: null,
+		runnerSprite: null,
 		bullets: [],
 		zombies: [],
 		pickups: [],
