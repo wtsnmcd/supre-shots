@@ -89,7 +89,13 @@ export function draw(state){
 		const app = state.zombieAppearance;
 		const scale = (z.r * app.sizeMultiplier) / 4;
 		
-		if(state.runnerSprite && z.type === 'runner'){
+		if(state.spitterSprite && z.type === 'spitter'){
+			ctx.save();
+			const spriteSize = 54;
+			const scaledSize = spriteSize * scale;
+			ctx.drawImage(state.spitterSprite, z.x - scaledSize/2, z.y - scaledSize/2, scaledSize, scaledSize);
+			ctx.restore();
+		} else if(state.runnerSprite && z.type === 'runner'){
 			ctx.save();
 			const spriteSize = 44;
 			const scaledSize = spriteSize * scale;
